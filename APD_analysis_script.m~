@@ -111,7 +111,7 @@ end
 
 % Determine the baseline before the peak
 
-baseline_det_rel_offset = 0.2; %relative (to mean PP) time before the peak
+baseline_det_rel_offset = 0.3; %relative (to mean PP) time before the peak
 baseline_det_abs_offset = 25; %absolute offset before the peak (ms)
 
 for i=1:n_rois
@@ -275,32 +275,21 @@ end
 
 % Signal action potential plots
 
-for i=1:n_rois
-   AP_fig(i) = figure(n_rois+i);
-   
-   for f=1:N_F_avg_peaks{1}
+AP_fig(1) = figure(4);
+
+for f=1:N_F_avg_peaks{1}
     
-    subplot(N_F_avg_peaks{i},1,f);
+    subplot(N_F_avg_peaks{1},1,f);
     %set(gcf,'Visible','off'); %prevent figures to pop up on screen
     plot(t,F_avg{i}, 'b.-'), grid;
-    %plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'),
-    %grid; plot the circle on top of the peak
-    
-        for f_bc=1:N_F_avg_peaks{i}
-            line([t(baseline_start_ind{i}{f_bc}), t(baseline_end_ind{i}{f_bc})],...
-            [baseline_mean{i}{f_bc}, baseline_mean{i}{f_bc}],...
-            'LineWidth', 2, 'Color', [0 0.6 0]) %baseline detection plot
-        end
-    
-    title([file_name2, '_ROI', num2str(i), ' - AP number: ', ...
-        num2str(f)],'Interpreter', 'none');
+    %plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'), grid;
+    title([file_name2, '_ROI', num2str(i), ' - AP signaPeak: ', num2str(f)],'Interpreter', 'none');
+    title([file_name2, '_ROI', num2str(i), ' - Derivative - Raw Signal'],'Interpreter', 'none');
     xlim([t(F_avg_peaks_ind{i}(f))-50,...
         t(F_avg_peaks_ind{i}(f))+100]);
     ylim([F_avg_min{i}-0.1*F_avg_range{i}, F_avg_max{i}+0.1*F_avg_range{i}]);
     xlabel 'Time (ms)', ylabel 'F (AU)';
     
-    end 
     
 end
-
 
