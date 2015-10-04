@@ -111,7 +111,7 @@ end
 
 % Determine the baseline before the peak
 
-baseline_det_rel_offset = 0.2; %relative (to mean PP) time before the peak
+baseline_det_rel_offset = 0.15; %relative (to mean PP) time before the peak
 baseline_det_abs_offset = 25; %absolute offset before the peak (ms)
 
 for i=1:n_rois
