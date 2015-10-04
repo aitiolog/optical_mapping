@@ -68,9 +68,7 @@ for i=1:n_rois
     F_avg_range{i} = abs(F_avg_max{i}-F_avg_min{i});
 end
 
-
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % First derivative (dF/dt)
 
@@ -94,6 +92,20 @@ tt = t(1:end-1)+diff(t)./2; % Associated time values (central difference)
 
 
 % Find peaks
+
+F_peak_MinHeight_set = 0.5; % min peak fold increase above baseline
+F_peak_MinDistance = 50; % min peak separation (customizable)
+
+for i=1:n_rois
+    [F_avg_peaks{i}, F_avg_peaks_ind{i}] = findpeaks(F_avg{i}, ...
+        'MinPeakHeight', (F_avg_min{1}+F_avg_range{1}*F_peak_MinHeight_set), ...
+        'MinPeakDistance', F_peak_MinDistance);
+    N_F_avg_peaks{i} = length(F_avg_peaks{i});
+    mean_F_interval{i} = mean(diff(t(F_avg_peaks_ind{i})));
+end
+
+
+
 
 % Calculate max_peak
 % Calculate mean (or RMS)
@@ -132,7 +144,8 @@ xlabel 'Time (ms)', ylabel 'F (AU)';
 
 subplot(5,4,9:11);
 %set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(t,F_avg{1}, 'b.-'), grid;
+%plot(t,F_avg{1}, 'b.-'), grid;
+plot(t,F_avg{1}, 'b.-', t(F_avg_peaks_ind{1}), F_avg_peaks{1}, 'oc'), grid;
 title([file_name2, ' - Optical Mapping - Baseline Correction + Smoothing'],'Interpreter', 'none');
 xlim([0,t_max]);
 ylim([F_avg_min{1}-0.1*F_avg_range{1}, F_avg_max{1}+0.1*F_avg_range{1}]);
@@ -160,7 +173,8 @@ subplot(5,4,4);
 %set(gcf,'Visible','off'); %prevent figures to pop up on screen
 plot(t,F_raw{1}, 'b.-'), grid;
 %title([file_name2, ' - Optical Mapping - Raw Signal'],'Interpreter', 'none');
-xlim([round(t_max/2)-500,round(t_max/2)+500]);
+xlim([t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))-100,...
+    t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))+150]);
 ylim([F_raw_min{1}-0.1*F_raw_range{1}, F_raw_max{1}+0.1*F_raw_range{1}]);
 xlabel 'Time (ms)', ylabel 'F (AU)';
 
@@ -168,15 +182,18 @@ subplot(5,4,8);
 %set(gcf,'Visible','off'); %prevent figures to pop up on screen
 plot(t,f_y{1}, 'g.-'), grid;
 %title([file_name2, ' - Optical Mapping - Baseline Correction'],'Interpreter', 'none');
-xlim([round(t_max/2)-300,round(t_max/2)+300]);
+xlim([t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))-100,...
+    t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))+150]);
 ylim([F_raw_min{1}-0.1*F_raw_range{1}, F_raw_max{1}+0.1*F_raw_range{1}]);
 xlabel 'Time (ms)', ylabel 'F (AU)';
 
 subplot(5,4,12);
 %set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(t,F_avg{1}, 'b.-'), grid;
+%plot(t,F_avg{1}, 'b.-'), grid;
+plot(t,F_avg{1}, 'b.-', t(F_avg_peaks_ind{1}), F_avg_peaks{1}, 'oc'), grid;
 %title([file_name2, ' - Optical Mapping - Baseline Correction + Smoothing'],'Interpreter', 'none');
-xlim([round(t_max/2)-300,round(t_max/2)+300]);
+xlim([t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))-100,...
+    t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))+150]);
 ylim([F_avg_min{1}-0.1*F_avg_range{1}, F_avg_max{1}+0.1*F_avg_range{1}]);
 xlabel 'Time (ms)', ylabel 'F (AU)';
 
@@ -184,7 +201,8 @@ subplot(5,4,16);
 %set(gcf,'Visible','off'); %prevent figures to pop up on screen
 plot(tt,dF_raw_dt{1}, 'r.-'), grid;
 %title([file_name2, ' - Derivative - Raw Signal'],'Interpreter', 'none');
-xlim([round(t_max/2)-300,round(t_max/2)+300]);
+xlim([t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))-100,...
+    t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))+150]);
 ylim([dF_raw_dt_min{1}-0.1*dF_raw_dt_range{1}, dF_raw_dt_max{1}+0.1*dF_raw_dt_range{1}]);
 xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
 
@@ -192,7 +210,8 @@ subplot(5,4,20);
 %set(gcf,'Visible','off'); %prevent figures to pop up on screen
 plot(tt,dF_avg_dt{1}, 'r.-'), grid;
 %title([file_name2, ' - Derivative - Baseline Correction + Smoothing'],'Interpreter', 'none');
-xlim([round(t_max/2)-300,round(t_max/2)+300]);
+xlim([t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))-100,...
+    t(F_avg_peaks_ind{1}(round(N_F_avg_peaks{1}/2)))+150]);
 ylim([dF_avg_dt_min{1}-0.1*dF_avg_dt_range{1}, dF_avg_dt_max{1}+0.1*dF_avg_dt_range{1}]);
 xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
 
