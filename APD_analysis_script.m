@@ -133,7 +133,7 @@ end
 
 % Max dF/dt and activation time
 
-AP_border_left = 50; % n of indices before every peak for max dF/dt detection
+AP_border_left = 50; % n of points before every peak for max dF/dt detection!
 
 for i=1:n_rois
     for j=1:N_F_avg_peaks{i}
@@ -141,16 +141,48 @@ for i=1:n_rois
             max(dF_avg_dt{i}(F_avg_peaks_ind{i}(j)-AP_border_left:F_avg_peaks_ind{i}(j)));
         t_act_ind{i}(j) = (F_avg_peaks_ind{i}(j) - AP_border_left...
             + dF_dt_max_rel_ind{i}(j)); %absolute time index
+        t_act{i}(j) = t(t_act_ind{i}(j)); %absolute activation times
     end          
 end
 
 
+% Rise time
 
+for i=1:n_rois
+    for j=1:N_F_avg_peaks{i}
+        AP_rise_time{i}(j) = t(F_avg_peaks_ind{i}(j)) - t_act{i}(j);
+    end          
+end
 
+% APD calculations
 
-% AP rise time
-% APD30, APD50, APD70, APD90
-% Max peak (F_max)
+for i=1:n_rois
+    for j=1:N_F_avg_peaks{i}
+        
+        F_max{i}(j) = F_avg_peaks{i}(j);
+        AP_amplitude{i}(j) = F_max{i}(j) - baseline_mean{i}{j};
+        
+        F_AP_30{i}(j) = F_max{i}(j) - 0.3*AP_amplitude{i}(j);
+        APD30_rel_ind{i}(j) = ...
+            find(F_avg{i}(F_avg_peaks_ind{i}(j):end)<F_AP_30{i}(j),1); %relative index to peak
+        APD30_ind{i}(j) = F_avg_peaks_ind{i}(j) + APD30_rel_ind{i}(j); %absolute index
+        APD30{i}(j) = t(APD30_ind{i}(j)) - t_act{i}(j); %absolute APD time
+        
+        F_AP_50{i}(j) = F_max{i}(j) - 0.5*AP_amplitude{i}(j);
+        APD50_rel_ind{i}(j) = ...
+            find(F_avg{i}(F_avg_peaks_ind{i}(j):end)<F_AP_50{i}(j),1); %relative index to peak
+        APD50_ind{i}(j) = F_avg_peaks_ind{i}(j) + APD50_rel_ind{i}(j); %absolute index
+        APD50{i}(j) = t(APD50_ind{i}(j)) - t_act{i}(j); %absolute APD time
+        
+        F_AP_80{i}(j) = F_max{i}(j) - 0.8*AP_amplitude{i}(j);
+        APD80_rel_ind{i}(j) = ...
+            find(F_avg{i}(F_avg_peaks_ind{i}(j):end)<F_AP_80{i}(j),1); %relative index to peak
+        APD80_ind{i}(j) = F_avg_peaks_ind{i}(j) + APD80_rel_ind{i}(j); %absolute index
+        APD80{i}(j) = t(APD80_ind{i}(j)) - t_act{i}(j); %absolute APD time
+        
+    end          
+end
+
 
 
 
