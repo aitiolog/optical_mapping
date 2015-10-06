@@ -131,13 +131,26 @@ for i=1:n_rois
 end
 
 
+% Max dF/dt and activation time
 
-% Calculate max_peak
-% Calculate mean (or RMS)
-% Calculate t0 (PP interval)
+AP_border_left = 50; % n of indices before every peak for max dF/dt detection
 
-% Calculate APD10, APD50, APD90
-% Calculate max_upstroke (max dF/dt)
+for i=1:n_rois
+    for j=1:N_F_avg_peaks{i}
+        [dF_dt_max{i}(j), dF_dt_max_rel_ind{i}(j)] = ...
+            max(dF_avg_dt{i}(F_avg_peaks_ind{i}(j)-AP_border_left:F_avg_peaks_ind{i}(j)));
+        t_act_ind{i}(j) = (F_avg_peaks_ind{i}(j) - AP_border_left...
+            + dF_dt_max_rel_ind{i}(j)); %absolute time index
+    end          
+end
+
+
+
+
+
+% AP rise time
+% APD30, APD50, APD70, APD90
+% Max peak (F_max)
 
 
 
@@ -185,7 +198,6 @@ line([t(baseline_start_ind{i}{f}), t(baseline_end_ind{i}{f})],...
     'LineWidth', 2, 'Color', [0 0.6 0]) %baseline detection plot
 end
 
-
 title([file_name2, '_ROI', num2str(i), ' - Optical Mapping - Baseline Correction + Smoothing'],...
     'Interpreter', 'none');
 xlim([0,t_max]);
@@ -202,7 +214,9 @@ xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
 
 subplot(5,4,17:19);
 %set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(tt,dF_avg_dt{i}, 'r.-'), grid;
+%plot(tt,dF_avg_dt{i}, 'r.-'), grid;
+plot(tt,dF_avg_dt{i}, 'r.-', t(t_act_ind{i}(1:N_F_avg_peaks{i})), ...
+    dF_dt_max{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
 title([file_name2, '_ROI', num2str(i), ' - Derivative - Baseline Correction + Smoothing'],...
     'Interpreter', 'none');
 xlim([0,t_max]);
