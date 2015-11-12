@@ -10,7 +10,7 @@ close all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load data
 
-file_name = 'test_data_1.roi';
+file_name = 'test_data_new3.roi';
 file_folder = 'roi';
 
 file_name2 = file_name(1:end-4);
@@ -19,7 +19,7 @@ file_name2 = file_name(1:end-4);
 raw_data = importdata(file_name);
 
 n_rois = size(raw_data, 2)-1;
-t = transpose(raw_data(:,1)); %time
+t = transpose(raw_data(:,1));
 
 for i=1:n_rois
    raw_signal{i} = transpose(raw_data(:,i+1));   
@@ -53,46 +53,28 @@ for i=1:n_rois
     F_BC{i} = F_raw{i} - f_y{i};
 end
 
-% Filter
+% Moving average filter
 
-% Option A: Moving average (simple, but bad option)
-
-% Note: some of the functions bellow are dependent upon windowSize
-
-% windowSize = 15; %customize!
-% b = (1/windowSize)*ones(1,windowSize);
-% a = 1;
-% 
-% for i=1:n_rois
-%     F_avg{i} = filter(b, a, F_BC{i});
-%     %F_avg_max{i} =  max(F_avg{i});
-%     %F_avg_min{i} =  min(F_avg{i});
-%
-%     %To avoid dips at the edges when using moving average
-%     F_avg_max{i} =  max(F_avg{i}(2*windowSize:(end-2*windowSize))); 
-%     F_avg_min{i} =  min(F_avg{i}(2*windowSize:(end-2*windowSize))); 
-%     F_avg_range{i} = abs(F_avg_max{i}-F_avg_min{i});
-% end
-
-
-% Option B: IIR filter averaging (Butteworth)
-% better approach
-% Recommended values: 5th order, 0.6
-% which corresponds to 100Hz filter using 1kHz sampling rate
-
-% Formula to calculate the value 'a'
-% a = (2*pi*Frequency_cutoff/sampling_frequency)
-
-
-[b,a] = butter(6,0.4);
-freqz(b,a);
+windowSize = 15; %customize!
+b = (1/windowSize)*ones(1,windowSize);
+a = 1;
 
 for i=1:n_rois
-    F_avg{i} = filtfilt(b, a, F_BC{i});
-    F_avg_max{i} =  max(F_avg{i});
-    F_avg_min{i} =  min(F_avg{i});
+    
+    F_avg{i} = F_BC{i}; % without smoothing
+    
+    %F_avg{i} = filter(b, a, F_BC{i});
+    
+    %F_avg_max{i} =  max(F_avg{i});
+    %F_avg_min{i} =  min(F_avg{i});
+    F_avg_max{i} =  max(F_avg{i}(2*windowSize:(end-2*windowSize)));
+    F_avg_min{i} =  min(F_avg{i}(2*windowSize:(end-2*windowSize))); 
     F_avg_range{i} = abs(F_avg_max{i}-F_avg_min{i});
+    
+    
+    
 end
+
 
 
 
@@ -109,12 +91,10 @@ end
 
 for i=1:n_rois
     dF_avg_dt{i} = diff(F_avg{i})./diff(t);
-    dF_avg_dt_max{i} = max(dF_avg_dt{i});
-    dF_avg_dt_min{i} = min(dF_avg_dt{i});
-    
-    % Use it with moving average
-    %dF_avg_dt_max{i} =  max(dF_avg_dt{i}(2*windowSize:(end-2*windowSize)));
-    %dF_avg_dt_min{i} =  min(dF_avg_dt{i}(2*windowSize:(end-2*windowSize))); 
+    %dF_avg_dt_max{i} = max(dF_avg_dt{i});
+    %dF_avg_dt_min{i} = min(dF_avg_dt{i});
+    dF_avg_dt_max{i} =  max(dF_avg_dt{i}(2*windowSize:(end-2*windowSize)));
+    dF_avg_dt_min{i} =  min(dF_avg_dt{i}(2*windowSize:(end-2*windowSize))); 
     dF_avg_dt_range{i} = abs(dF_avg_dt_max{i}-dF_avg_dt_min{i});
 end
 
@@ -123,8 +103,8 @@ tt = t(1:end-1)+diff(t)./2; % Associated time values (central difference)
 
 % Find peaks
 
-F_peak_MinHeight_set = 0.7; % min peak fold increase above baseline
-F_peak_MinDistance = 70; % min peak separation (customizable)
+F_peak_MinHeight_set = 0.8; % min peak fold increase above baseline
+F_peak_MinDistance = 50; % min peak separation (customizable)
 
 for i=1:n_rois
     [F_avg_peaks{i}, F_avg_peaks_ind{i}] = findpeaks(F_avg{i}, ...
@@ -164,54 +144,77 @@ end
 % Max dF/dt and activation time
 
 AP_border_left = 50; % n of points before every peak for max dF/dt detection!
+% 
+% for i=1:n_rois
+%     for j=1:N_F_avg_peaks{i}
+%         [dF_dt_max{i}(j), dF_dt_max_rel_ind{i}(j)] = ...
+%             max(dF_avg_dt{i}(F_avg_peaks_ind{i}(j)-AP_border_left:F_avg_peaks_ind{i}(j)));
+%         t_act_ind{i}(j) = (F_avg_peaks_ind{i}(j) - AP_border_left...
+%             + dF_dt_max_rel_ind{i}(j)); %absolute time index
+%         t_act{i}(j) = t(t_act_ind{i}(j)); %absolute activation times
+%     end          
+% end
+% 
 
-for i=1:n_rois
-    for j=1:N_F_avg_peaks{i}
-        [dF_dt_max{i}(j), dF_dt_max_rel_ind{i}(j)] = ...
-            max(dF_avg_dt{i}(F_avg_peaks_ind{i}(j)-AP_border_left:F_avg_peaks_ind{i}(j)));
-        t_act_ind{i}(j) = (F_avg_peaks_ind{i}(j) - AP_border_left...
-            + dF_dt_max_rel_ind{i}(j)); %absolute time index
-        t_act{i}(j) = t(t_act_ind{i}(j)); %absolute activation times
-    end          
-end
+% % Rise time
+% 
+% for i=1:n_rois
+%     for j=1:N_F_avg_peaks{i}
+%         AP_rise_time{i}(j) = t(F_avg_peaks_ind{i}(j)) - t_act{i}(j);
+%     end          
+% end
+% 
+
+% Exponential fit
+
+t_exp_fit = 75; %time used for repolarization fitting
+
+% for i=1:n_rois
+%     for j=1:N_F_avg_peaks{i}
+%         
+%         t_repol_exp_fit{i}{j} = ...
+%             t(F_avg_peaks_ind{i}(j):F_avg_peaks_ind{i}(j)+t_exp_fit);
+%         F_avg_exp_fit{i}{j} = ...
+%             F_avg{i}(F_avg_peaks_ind{i}(j):F_avg_peaks_ind{i}(j)+t_exp_fit);
+%         F_repol_exp_fit{i}{j} = ...
+%             fit(t_repol_exp_fit{i}{j}(:), ...
+%             F_avg_exp_fit{i}{j}(:), 'exp2'); %Note: fit requires number in columns (not rows)
+%         
+%         
+%         
+%     end          
+% end
 
 
-% Rise time
-
-for i=1:n_rois
-    for j=1:N_F_avg_peaks{i}
-        AP_rise_time{i}(j) = t(F_avg_peaks_ind{i}(j)) - t_act{i}(j);
-    end          
-end
 
 % APD calculations
 
-for i=1:n_rois
-    for j=1:N_F_avg_peaks{i}
-        
-        F_max{i}(j) = F_avg_peaks{i}(j);
-        AP_amplitude{i}(j) = F_max{i}(j) - baseline_mean{i}{j};
-        
-        F_AP_30{i}(j) = F_max{i}(j) - 0.3*AP_amplitude{i}(j);
-        APD30_rel_ind{i}(j) = ...
-            find(F_avg{i}(F_avg_peaks_ind{i}(j):end)<F_AP_30{i}(j),1); %relative index to peak
-        APD30_ind{i}(j) = F_avg_peaks_ind{i}(j) + APD30_rel_ind{i}(j); %absolute index
-        APD30{i}(j) = t(APD30_ind{i}(j)) - t_act{i}(j); %absolute APD time
-        
-        F_AP_50{i}(j) = F_max{i}(j) - 0.5*AP_amplitude{i}(j);
-        APD50_rel_ind{i}(j) = ...
-            find(F_avg{i}(F_avg_peaks_ind{i}(j):end)<F_AP_50{i}(j),1); %relative index to peak
-        APD50_ind{i}(j) = F_avg_peaks_ind{i}(j) + APD50_rel_ind{i}(j); %absolute index
-        APD50{i}(j) = t(APD50_ind{i}(j)) - t_act{i}(j); %absolute APD time
-        
-        F_AP_80{i}(j) = F_max{i}(j) - 0.8*AP_amplitude{i}(j);
-        APD80_rel_ind{i}(j) = ...
-            find(F_avg{i}(F_avg_peaks_ind{i}(j):end)<F_AP_80{i}(j),1); %relative index to peak
-        APD80_ind{i}(j) = F_avg_peaks_ind{i}(j) + APD80_rel_ind{i}(j); %absolute index
-        APD80{i}(j) = t(APD80_ind{i}(j)) - t_act{i}(j); %absolute APD time
-        
-    end          
-end
+% for i=1:n_rois
+%     for j=1:N_F_avg_peaks{i}
+%         
+%         F_max{i}(j) = F_avg_peaks{i}(j);
+%         AP_amplitude{i}(j) = F_max{i}(j) - baseline_mean{i}{j};
+%         
+%         F_AP_30{i}(j) = F_max{i}(j) - 0.3*AP_amplitude{i}(j);
+%         APD30_rel_ind{i}(j) = ...
+%             find(F_avg{i}(F_avg_peaks_ind{i}(j):end)<F_AP_30{i}(j),1); %relative index to peak
+%         APD30_ind{i}(j) = F_avg_peaks_ind{i}(j) + APD30_rel_ind{i}(j); %absolute index
+%         APD30{i}(j) = t(APD30_ind{i}(j)) - t_act{i}(j); %absolute APD time
+%         
+%         F_AP_50{i}(j) = F_max{i}(j) - 0.5*AP_amplitude{i}(j);
+%         APD50_rel_ind{i}(j) = ...
+%             find(F_avg{i}(F_avg_peaks_ind{i}(j):end)<F_AP_50{i}(j),1); %relative index to peak
+%         APD50_ind{i}(j) = F_avg_peaks_ind{i}(j) + APD50_rel_ind{i}(j); %absolute index
+%         APD50{i}(j) = t(APD50_ind{i}(j)) - t_act{i}(j); %absolute APD time
+%         
+%         F_AP_80{i}(j) = F_max{i}(j) - 0.8*AP_amplitude{i}(j);
+%         APD80_rel_ind{i}(j) = ...
+%             find(F_avg{i}(F_avg_peaks_ind{i}(j):end)<F_AP_80{i}(j),1); %relative index to peak
+%         APD80_ind{i}(j) = F_avg_peaks_ind{i}(j) + APD80_rel_ind{i}(j); %absolute index
+%         APD80{i}(j) = t(APD80_ind{i}(j)) - t_act{i}(j); %absolute APD time
+%         
+%     end          
+% end
 
 
 
@@ -392,9 +395,12 @@ for i=1:n_rois
        
     subplot(2,N_F_avg_peaks{i},f);
     %set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    hold on;
     plot(t,F_avg{i}, 'b.-'), grid;
     %plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'),
     %grid; plot the circle on top of the peak
+    
+    plot(F_repol_exp_fit{i}{f});
     
     %Plot different lines to the plot
     
