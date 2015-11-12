@@ -19,5 +19,5 @@ slprj/
 *.jpg
 *.fig
 
-Ignore Sandbox folder
+# Ignore Sandbox folder
 Sandbox/
