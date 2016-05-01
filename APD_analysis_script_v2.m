@@ -6,7 +6,9 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% v2: added feature to save results in csv file
+% v2 - updates: 
+% - better logic to handle APs close to the border
+% - added feature to save results in csv file
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -139,27 +141,24 @@ for i=1:n_rois
     [F_avg_peaks{i}, F_avg_peaks_ind{i}] = findpeaks(F_avg{i}, ...
         'MinPeakHeight', (F_avg_min{1}+F_avg_range{1}*F_peak_MinHeight_set), ...
         'MinPeakDistance', F_peak_MinDistance);
+        
+    % Cutoff at the beginning
+    while t(F_avg_peaks_ind{i}(1)) < T_BEGIN_CUTOFF;
+        F_avg_peaks{i} = F_avg_peaks{i}(2:end);
+        F_avg_peaks_ind{i} = F_avg_peaks_ind{i}(2:end);    
+    end
+    
+    % Cutoff at the end
+    while t_max - t(F_avg_peaks_ind{i}(end)) < T_END_CUTOFF;
+        F_avg_peaks{i} = F_avg_peaks{i}(1:end-1);
+        F_avg_peaks_ind{i} = F_avg_peaks_ind{i}(1:end-1);    
+    end
+    
     mean_F_interval{i} = mean(diff(t(F_avg_peaks_ind{i})));
     N_F_avg_peaks{i} = length(F_avg_peaks{i});
     
-    if t(F_avg_peaks_ind{i}(N_F_avg_peaks{i}))-t_max < T_END_CUTOFF; 
-       N_F_avg_peaks{i} = N_F_avg_peaks{i} -1; %omit the last AP if too close to the end
-    end
-    
-    %%%%% TO-DO
-    % - add another border condition if the AP is too close to the beginning
-%     
-%     % while loop (t < T_BEGIN_CUTOFF)
-%       % A = A(2:end) and N = N-1
-%
-%     if t(F_avg_peaks_ind{i}(1)) < T_BEGIN_CUTOFF;
-%        % code that will do something
-%        % for loop ind2 -> ind1
-%        % clever way to delete the first value from the vector
-%        
-%     end
-    
 end
+
 
 % Intervals between the signals
 
@@ -173,7 +172,7 @@ end
 % Determine the baseline before the peak
 
 baseline_det_rel_offset = 0.15; %relative (to mean PP) time before the peak
-baseline_det_abs_offset = 25; %absolute offset before the peak (ms)
+baseline_det_abs_offset = 25; %absolute offset before the peak
 
 for i=1:n_rois
     for j=1:N_F_avg_peaks{i}   
