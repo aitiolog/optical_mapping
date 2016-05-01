@@ -338,7 +338,8 @@ fclose(fileID);
 
 if strcmp('jpg', save_figure);
     
-
+    % Fontsize for plots
+    fontSize = 4;
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -353,6 +354,7 @@ if strcmp('jpg', save_figure);
     subplot(5,4,1:3);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
     plot(t,F_raw{i}, 'b.-'), grid;
+    set(gca,'FontSize',fontSize);
     title([file_name2, '_ROI', num2str(i), ' - Optical Mapping - Raw Signal'],...
         'Interpreter', 'none');
     xlim([0,t_max]);
@@ -362,6 +364,7 @@ if strcmp('jpg', save_figure);
     subplot(5,4,5:7);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
     plot(t,f_y{i}, 'g.-'), grid;
+    set(gca,'FontSize',fontSize);
     title([file_name2, '_ROI', num2str(i), ' - Optical Mapping - Baseline Correction'],...
         'Interpreter', 'none');
     xlim([0,t_max]);
@@ -373,7 +376,8 @@ if strcmp('jpg', save_figure);
     %plot(t,F_avg{i}, 'b.-'), grid;
     plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}(1:N_F_avg_peaks{i})), ...
         F_avg_peaks{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
-
+    set(gca,'FontSize',fontSize);
+    
     for f=1:N_F_avg_peaks{i}
     line([t(baseline_start_ind{i}{f}), t(baseline_end_ind{i}{f})],...
         [baseline_mean{i}{f}, baseline_mean{i}{f}],...
@@ -389,6 +393,7 @@ if strcmp('jpg', save_figure);
     subplot(5,4,13:15);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
     plot(tt,dF_raw_dt{i}, 'r.-'), grid;
+    set(gca,'FontSize',fontSize);
     title([file_name2, '_ROI', num2str(i), ' - Derivative - Raw Signal'],'Interpreter', 'none');
     xlim([0,t_max]);
     ylim([dF_raw_dt_min{i}-0.1*dF_raw_dt_range{i}, dF_raw_dt_max{i}+0.1*dF_raw_dt_range{i}]);
@@ -399,6 +404,7 @@ if strcmp('jpg', save_figure);
     %plot(tt,dF_avg_dt{i}, 'r.-'), grid;
     plot(tt,dF_avg_dt{i}, 'r.-', t(t_act_ind{i}(1:N_F_avg_peaks{i})), ...
         dF_dt_max{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
+    set(gca,'FontSize',fontSize);
     title([file_name2, '_ROI', num2str(i), ' - Derivative - Baseline Correction + Smoothing'],...
         'Interpreter', 'none');
     xlim([0,t_max]);
@@ -410,6 +416,7 @@ if strcmp('jpg', save_figure);
     subplot(5,4,4);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
     plot(t,F_raw{i}, 'b.-'), grid;
+    set(gca,'FontSize',fontSize);
     title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
     xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
         t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
@@ -419,6 +426,7 @@ if strcmp('jpg', save_figure);
     subplot(5,4,8);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
     plot(t,f_y{i}, 'g.-'), grid;
+    set(gca,'FontSize',fontSize);
     title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
     xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
         t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
@@ -429,6 +437,7 @@ if strcmp('jpg', save_figure);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
     %plot(t,F_avg{i}, 'b.-'), grid;
     plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'), grid;
+    set(gca,'FontSize',fontSize);
     title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
     xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
         t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
@@ -438,6 +447,7 @@ if strcmp('jpg', save_figure);
     subplot(5,4,16);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
     plot(tt,dF_raw_dt{i}, 'r.-'), grid;
+    set(gca,'FontSize',fontSize);
     title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
     xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
         t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
@@ -447,6 +457,7 @@ if strcmp('jpg', save_figure);
     subplot(5,4,20);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
     plot(tt,dF_avg_dt{i}, 'r.-'), grid;
+    set(gca,'FontSize',fontSize);
     title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
     xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
         t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
@@ -459,7 +470,8 @@ if strcmp('jpg', save_figure);
 
     %print('-djpeg', '-r300', [file_name2,'_signal.jpg']); %simple jpg export
     r = 300; % pixels per inch
-    set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 3000 6000]/r); % ->resolution: 1500x3000
+    %set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 3000 6000]/r); % ->resolution: 1500x3000
+    set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 1000 2000]/r); % ->resolution: 500x1000
     print(gcf, '-djpeg', [output_folder, file_name2, '_ROI', num2str(i), '_signal.jpg']); %jpg export
 
     end
@@ -513,6 +525,7 @@ if strcmp('jpg', save_figure);
         subplot(2,N_F_avg_peaks{i},f);
         set(gcf,'Visible','off'); %prevent figures to pop up on screen
         plot(t,F_avg{i}, 'b.-'), grid;
+        set(gca,'FontSize',fontSize);
         %plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'),
         %grid; plot the circle on top of the peak
 
@@ -562,6 +575,7 @@ if strcmp('jpg', save_figure);
         set(gcf,'Visible','off'); %prevent figures to pop up on screen
         plot(tt,dF_avg_dt{i}, 'r.-', t(t_act_ind{i}(1:N_F_avg_peaks{i})), ...
         dF_dt_max{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
+        set(gca,'FontSize',fontSize);
 
         for f_lines=1:N_F_avg_peaks{i}
             line([t_act{i}(f_lines), t_act{i}(f_lines)],...
@@ -587,7 +601,8 @@ if strcmp('jpg', save_figure);
 
         %print('-djpeg', '-r300', [file_name2,'_signal.jpg']); %simple jpg export
         r = 300; % pixels per inch
-        set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 900*N_F_avg_peaks{i} 2160]/r); % ->resolution: N_AP*450 x 1080
+        %set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 900*N_F_avg_peaks{i} 2160]/r); % ->resolution: N_AP*450 x 1080
+        set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 300*N_F_avg_peaks{i} 720]/r); % ->resolution: N_AP*150 x 360
         print(gcf, '-djpeg', [output_folder, file_name2, '_ROI', num2str(i), '_AP.jpg']); %jpg export
 
 
