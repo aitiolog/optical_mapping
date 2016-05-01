@@ -163,7 +163,10 @@ end
 
 % Intervals between the signals
 
-% F_interval{i} = diff(t(F_avg_peaks_ind{i}));
+for i=1:n_rois
+    F_peak_interval{i} = diff(t(F_avg_peaks_ind{i}(:)));
+    N_F_peak_interval{i} = length(F_peak_interval{i});
+end
 
 
 
@@ -244,20 +247,78 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-% SAVE RESULTS IN CSV FILE
+% SAVE RESULTS - CSV FILE
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-% TO-DO
-% variables:
-% - APD30, APD50, APD80
-% - AP amplitude
-% - interval between APs
-%
 % Format:
 % - one results file per loaded ROI file
 % - one line for one variable (all results horizontaly)
 % - naming: file name, ROI number, variable, N measurements, measurements
+% - variables: APD30, APD50, APD80, peak_intervals, peak_amplitudes
+
+
+% Format the output row
+
+for i=1:n_rois  
+           
+    % APD30
+    outputAPD30Row{i} = [{file_name2, i, 'APD30', N_F_avg_peaks{i}},...
+        num2cell(APD30{i})];
+    outputAPD30RowString{i} = cellfun(@num2str, outputAPD30Row{i},...
+        'UniformOutput', false);
+    outputAPD30RowSingleString{i} = strjoin(outputAPD30RowString{i}, ',');
+
+    % APD50
+    outputAPD50Row{i} = [{file_name2, i, 'APD50', N_F_avg_peaks{i}},...
+        num2cell(APD50{i})];
+    outputAPD50RowString{i} = cellfun(@num2str, outputAPD50Row{i},...
+        'UniformOutput', false);
+    outputAPD50RowSingleString{i} = strjoin(outputAPD50RowString{i}, ',');
+
+    % APD80
+    outputAPD80Row{i} = [{file_name2, i, 'APD80', N_F_avg_peaks{i}},...
+        num2cell(APD80{i})];
+    outputAPD80RowString{i} = cellfun(@num2str, outputAPD80Row{i},...
+        'UniformOutput', false);
+    outputAPD80RowSingleString{i} = strjoin(outputAPD80RowString{i}, ',');
+
+    % AP intervals
+    outputF_peak_intervalRow{i} = [{file_name2, i, 'Peak_Intervals',...
+        N_F_peak_interval{i}}, num2cell(F_peak_interval{i})];
+    outputF_peak_intervalRowString{i} = cellfun(@num2str, ...
+        outputF_peak_intervalRow{i}, 'UniformOutput', false);
+    outputF_peak_intervalRowSingleString{i} = ...
+        strjoin(outputF_peak_intervalRowString{i}, ',');
+
+    % AP amplitude
+    outputAP_amplitudeRow{i} = [{file_name2, i, 'AP_amplitude',...
+        N_F_avg_peaks{i}}, num2cell(AP_amplitude{i})];
+    outputAP_amplitudeRowString{i} = cellfun(@num2str, outputAP_amplitudeRow{i},...
+        'UniformOutput', false);
+    outputAP_amplitudeRowSingleString{i} = strjoin(outputAP_amplitudeRowString{i}, ',');
+        
+end
+
+
+% Merge rows
+
+outputTableRows = [outputAPD30RowSingleString, outputAPD50RowSingleString,...
+    outputAPD80RowSingleString, outputF_peak_intervalRowSingleString,...
+    outputAP_amplitudeRowSingleString];
+
+
+%Save file to the csv file
+
+outputTableFilename = [file_name2, '-table.csv'];
+N_rows = length(outputTableRows);
+
+fileID = fopen(outputTableFilename,'w');
+fprintf(fileID,'%s,\n',...
+    'file_name,ROI_N,Variable,N_measurements,Measurements>>>>>>'); % header line
+for i=1:N_rows
+    fprintf(fileID, '%s\n', outputTableRows{i});
+end
+fclose(fileID);
 
 
 
