@@ -25,4 +25,6 @@ slprj/
 # Ignore Sandbox folder
 Sandbox/
 
+# Ignore ROIs
+ROI_Files/
 *.roi
