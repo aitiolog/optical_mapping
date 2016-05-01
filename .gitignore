@@ -19,7 +19,8 @@ slprj/
 *.jpg
 *.fig
 
-# Ignore results table
+# Ignore outputs and results table
+Output/
 *.csv
 
 # Ignore Sandbox folder
