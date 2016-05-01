@@ -11,12 +11,14 @@ close all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GLOBAL VARIABLES
 
-%ROI_FILE_FOLDER = 'ROI_Files/';
+%ROI_FILE_FOLDER = 'ROI_Files/'; %it must contain the last '/' or '\'(Win)
 ROI_FILE_FOLDER = '/Users/klemen/Repositories/optical_mapping/ROI_Files/';
 ROI_EXTENSION = '*.roi';
 
-%OUTPUT_FOLDER = 'Output';
-OUTPUT_FOLDER = '/Users/klemen/Repositories/optical_mapping/Output';
+%OUTPUT_FOLDER = 'Output/'; %it must contain the last '/' or '\'(Win)
+OUTPUT_FOLDER = '/Users/klemen/Repositories/optical_mapping/Output/';
+
+SAVE_FIGURES = 'jpg';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -35,15 +37,19 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Run the APD analysis
 
-% set new working directory
-
-
 % Batch processing
+tic
 
 for i=1:N_ROI_files
+    toc
     disp(['Analysis of the file (',num2str(i),'/',num2str(N_ROI_files),...
         '): ',ROI_files(i).name,...
         ' - (',num2str(round(10*100*i/N_ROI_files)/10), '%)']);
-    %output{i} = CellShorteningAnalysis(file_folder, cell_files(i).name); % output is a cell array - access using output{1,2}(6)
+        
+    % Run the function that analyses the ROI file
+    APD_analysis_function(ROI_FILE_FOLDER, ROI_files(i).name, ...
+        OUTPUT_FOLDER, SAVE_FIGURES);
+    close all;
+    
 end
-
+toc
