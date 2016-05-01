@@ -18,7 +18,8 @@ ROI_EXTENSION = '*.roi';
 %OUTPUT_FOLDER = 'Output/'; %it must contain the last '/' or '\'(Win)
 OUTPUT_FOLDER = '/Users/klemen/Repositories/optical_mapping/Output/';
 
-SAVE_FIGURES = 'jpg';
+%SAVE_FIGURES = 'jpg';
+SAVE_FIGURES = '0'; %switch off figure saving
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -53,3 +54,4 @@ for i=1:N_ROI_files
     
 end
 toc
+

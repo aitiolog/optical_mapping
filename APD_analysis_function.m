@@ -4,6 +4,11 @@ function APD_analysis_function(file_folder, file_name, output_folder, save_figur
 %   Outputs APD30, APD50, APD80, AP intervals, AP amplitudes in csv files
 %   Optional: saves figures as jpg files
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Check if save_figure argument exists
+if (~exist('save_figure', 'var'))
+        save_figure = 'FALSE';
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -329,259 +334,269 @@ fclose(fileID);
 % GRAPHS
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Signal smoothing plots
+% Switch for figure plots
 
-% Loop for generating figures
-
-for i=1:n_rois
-
-signal_fig(i) = figure(i);
-
-subplot(5,4,1:3);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(t,F_raw{i}, 'b.-'), grid;
-title([file_name2, '_ROI', num2str(i), ' - Optical Mapping - Raw Signal'],...
-    'Interpreter', 'none');
-xlim([0,t_max]);
-ylim([F_raw_min{i}-0.1*F_raw_range{i}, F_raw_max{i}+0.1*F_raw_range{i}]);
-xlabel 'Time (ms)', ylabel 'F (AU)';
-
-subplot(5,4,5:7);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(t,f_y{i}, 'g.-'), grid;
-title([file_name2, '_ROI', num2str(i), ' - Optical Mapping - Baseline Correction'],...
-    'Interpreter', 'none');
-xlim([0,t_max]);
-ylim([F_raw_min{i}-0.1*F_raw_range{i}, F_raw_max{i}+0.1*F_raw_range{i}]);
-xlabel 'Time (ms)', ylabel 'F (AU)';
-
-subplot(5,4,9:11);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-%plot(t,F_avg{i}, 'b.-'), grid;
-plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}(1:N_F_avg_peaks{i})), ...
-    F_avg_peaks{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
-
-for f=1:N_F_avg_peaks{i}
-line([t(baseline_start_ind{i}{f}), t(baseline_end_ind{i}{f})],...
-    [baseline_mean{i}{f}, baseline_mean{i}{f}],...
-    'LineWidth', 2, 'Color', [0 0.6 0]) %baseline detection plot
-end
-
-title([file_name2, '_ROI', num2str(i), ' - Optical Mapping - Baseline Correction + Smoothing'],...
-    'Interpreter', 'none');
-xlim([0,t_max]);
-ylim([F_avg_min{i}-0.1*F_avg_range{i}, F_avg_max{i}+0.1*F_avg_range{i}]);
-xlabel 'Time (ms)', ylabel 'F (AU)';
-
-subplot(5,4,13:15);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(tt,dF_raw_dt{i}, 'r.-'), grid;
-title([file_name2, '_ROI', num2str(i), ' - Derivative - Raw Signal'],'Interpreter', 'none');
-xlim([0,t_max]);
-ylim([dF_raw_dt_min{i}-0.1*dF_raw_dt_range{i}, dF_raw_dt_max{i}+0.1*dF_raw_dt_range{i}]);
-xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
-
-subplot(5,4,17:19);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-%plot(tt,dF_avg_dt{i}, 'r.-'), grid;
-plot(tt,dF_avg_dt{i}, 'r.-', t(t_act_ind{i}(1:N_F_avg_peaks{i})), ...
-    dF_dt_max{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
-title([file_name2, '_ROI', num2str(i), ' - Derivative - Baseline Correction + Smoothing'],...
-    'Interpreter', 'none');
-xlim([0,t_max]);
-ylim([dF_avg_dt_min{i}-0.1*dF_avg_dt_range{i}, dF_avg_dt_max{i}+0.1*dF_avg_dt_range{i}]);
-xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
-
-% Zoomed in plots
-
-subplot(5,4,4);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(t,F_raw{i}, 'b.-'), grid;
-title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
-xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
-    t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
-ylim([F_raw_min{i}-0.1*F_raw_range{i}, F_raw_max{i}+0.1*F_raw_range{i}]);
-xlabel 'Time (ms)', ylabel 'F (AU)';
-
-subplot(5,4,8);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(t,f_y{i}, 'g.-'), grid;
-title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
-xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
-    t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
-ylim([F_raw_min{i}-0.1*F_raw_range{i}, F_raw_max{i}+0.1*F_raw_range{i}]);
-xlabel 'Time (ms)', ylabel 'F (AU)';
-
-subplot(5,4,12);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-%plot(t,F_avg{i}, 'b.-'), grid;
-plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'), grid;
-title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
-xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
-    t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
-ylim([F_avg_min{i}-0.1*F_avg_range{i}, F_avg_max{i}+0.1*F_avg_range{i}]);
-xlabel 'Time (ms)', ylabel 'F (AU)';
-
-subplot(5,4,16);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(tt,dF_raw_dt{i}, 'r.-'), grid;
-title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
-xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
-    t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
-ylim([dF_raw_dt_min{i}-0.1*dF_raw_dt_range{i}, dF_raw_dt_max{i}+0.1*dF_raw_dt_range{i}]);
-xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
-
-subplot(5,4,20);
-set(gcf,'Visible','off'); %prevent figures to pop up on screen
-plot(tt,dF_avg_dt{i}, 'r.-'), grid;
-title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
-xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
-    t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
-ylim([dF_avg_dt_min{i}-0.1*dF_avg_dt_range{i}, dF_avg_dt_max{i}+0.1*dF_avg_dt_range{i}]);
-xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
-
-% Save figure
-
-%saveas(signal_fig(i), [file_name2, '_ROI', num2str(i), '_signal'], 'fig'); 
-
-%print('-djpeg', '-r300', [file_name2,'_signal.jpg']); %simple jpg export
-r = 300; % pixels per inch
-set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 3000 6000]/r); % ->resolution: 1500x3000
-print(gcf, '-djpeg', [output_folder, file_name2, '_ROI', num2str(i), '_signal.jpg']); %jpg export
-
-end
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Electrophysiological variables
-
-% Signal action potential plots
-
-%Vertical plots
-% for i=1:n_rois
-%    AP_fig(i) = figure(n_rois+i);
-%    
-%    for f=1:N_F_avg_peaks{1}
-%     
-%     subplot(N_F_avg_peaks{i},1,f);
-%     %set(gcf,'Visible','off'); %prevent figures to pop up on screen
-%     plot(t,F_avg{i}, 'b.-'), grid;
-%     %plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'),
-%     %grid; plot the circle on top of the peak
-%     
-%         for f_bc=1:N_F_avg_peaks{i}
-%             line([t(baseline_start_ind{i}{f_bc}), t(baseline_end_ind{i}{f_bc})],...
-%             [baseline_mean{i}{f_bc}, baseline_mean{i}{f_bc}],...
-%             'LineWidth', 2, 'Color', [0 0.6 0]) %baseline detection plot
-%         end
-%     
-%     title([file_name2, '_ROI', num2str(i), ' - AP number: ', ...
-%         num2str(f)],'Interpreter', 'none');
-%     xlim([t(F_avg_peaks_ind{i}(f))-50,...
-%         t(F_avg_peaks_ind{i}(f))+100]);
-%     ylim([F_avg_min{i}-0.1*F_avg_range{i}, F_avg_max{i}+0.1*F_avg_range{i}]);
-%     xlabel 'Time (ms)', ylabel 'F (AU)';
-%     
-%     end 
-%     
-% end
-
-
-%Horizontal plots
-
-for i=1:n_rois
-   AP_fig(i) = figure(n_rois+i);
-   
-   for f=1:N_F_avg_peaks{i}
+if strcmp('jpg', save_figure);
     
-    % Main AP plots
-       
-    subplot(2,N_F_avg_peaks{i},f);
+
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Signal smoothing plots
+
+    % Loop for generating figures
+
+    for i=1:n_rois
+
+    signal_fig(i) = figure(i);
+
+    subplot(5,4,1:3);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
-    plot(t,F_avg{i}, 'b.-'), grid;
-    %plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'),
-    %grid; plot the circle on top of the peak
-    
-    %Plot different lines to the plot
-    
-        for f_lines=1:N_F_avg_peaks{i}
-            
-            line([t(baseline_start_ind{i}{f_lines}), t(baseline_end_ind{i}{f_lines})],...
-            [baseline_mean{i}{f_lines}, baseline_mean{i}{f_lines}],...
-            'LineWidth', 2, 'Color', [0 0.6 0]); %baseline detection plot
-        
-            line([t_act{i}(f_lines), t_act{i}(f_lines)],...
-            [baseline_mean{i}{f_lines}, F_max{i}(f_lines)],...
-            'LineWidth', 0.75, 'Color', [0 0 0],...
-            'LineStyle', '--'); %Activation time vertical line
-        
-            line([t_act{i}(f_lines), t(F_avg_peaks_ind{i}(f_lines))],...
-            [F_max{i}(f_lines), F_max{i}(f_lines)],...
-            'LineWidth', 2, 'Color', [1 0 0]); %Rise time line
-        
-            line([t_act{i}(f_lines), t(APD30_ind{i}(f_lines))],...
-            [F_AP_30{i}(f_lines), F_AP_30{i}(f_lines)],...
-            'LineWidth', 2, 'Color', [1 0 0]); %APD30 line
-        
-            line([t_act{i}(f_lines), t(APD50_ind{i}(f_lines))],...
-            [F_AP_50{i}(f_lines), F_AP_50{i}(f_lines)],...
-            'LineWidth', 2, 'Color', [1 0 0]); %APD50 line
-        
-            line([t_act{i}(f_lines), t(APD80_ind{i}(f_lines))],...
-            [F_AP_80{i}(f_lines), F_AP_80{i}(f_lines)],...
-            'LineWidth', 2, 'Color', [1 0 0]); %APD80 line
-        
-        end
-    
-    title([file_name2, '_ROI', num2str(i), ' - AP', ...
-        num2str(f)],'Interpreter', 'none');
-    xlim([t(F_avg_peaks_ind{i}(f))-100,...
-        t(F_avg_peaks_ind{i}(f))+150]);
-    ylim([F_avg_min{i}-0.1*F_avg_range{i}, F_avg_max{i}+0.1*F_avg_range{i}]);
+    plot(t,F_raw{i}, 'b.-'), grid;
+    title([file_name2, '_ROI', num2str(i), ' - Optical Mapping - Raw Signal'],...
+        'Interpreter', 'none');
+    xlim([0,t_max]);
+    ylim([F_raw_min{i}-0.1*F_raw_range{i}, F_raw_max{i}+0.1*F_raw_range{i}]);
     xlabel 'Time (ms)', ylabel 'F (AU)';
-    
-    
-    
-    % First derivative plot
-    
-    subplot(2,N_F_avg_peaks{i},N_F_avg_peaks{i}+f);
+
+    subplot(5,4,5:7);
     set(gcf,'Visible','off'); %prevent figures to pop up on screen
-    plot(tt,dF_avg_dt{i}, 'r.-', t(t_act_ind{i}(1:N_F_avg_peaks{i})), ...
-    dF_dt_max{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
-    
-    for f_lines=1:N_F_avg_peaks{i}
-        line([t_act{i}(f_lines), t_act{i}(f_lines)],...
-            [dF_avg_dt_min{i}-0.1*dF_avg_dt_range{i}, ...
-            dF_avg_dt_max{i}+0.1*dF_avg_dt_range{i}],...
-            'LineWidth', 0.75, 'Color', [0 0 0],...
-            'LineStyle', '--'); %Activation time vertical line
+    plot(t,f_y{i}, 'g.-'), grid;
+    title([file_name2, '_ROI', num2str(i), ' - Optical Mapping - Baseline Correction'],...
+        'Interpreter', 'none');
+    xlim([0,t_max]);
+    ylim([F_raw_min{i}-0.1*F_raw_range{i}, F_raw_max{i}+0.1*F_raw_range{i}]);
+    xlabel 'Time (ms)', ylabel 'F (AU)';
+
+    subplot(5,4,9:11);
+    set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    %plot(t,F_avg{i}, 'b.-'), grid;
+    plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}(1:N_F_avg_peaks{i})), ...
+        F_avg_peaks{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
+
+    for f=1:N_F_avg_peaks{i}
+    line([t(baseline_start_ind{i}{f}), t(baseline_end_ind{i}{f})],...
+        [baseline_mean{i}{f}, baseline_mean{i}{f}],...
+        'LineWidth', 2, 'Color', [0 0.6 0]) %baseline detection plot
     end
 
-    title([file_name2, '_ROI', num2str(i), ' - AP', ...
-        num2str(f)],'Interpreter', 'none');
-    xlim([t(F_avg_peaks_ind{i}(f))-100,...
-        t(F_avg_peaks_ind{i}(f))+150]);
+    title([file_name2, '_ROI', num2str(i), ' - Optical Mapping - Baseline Correction + Smoothing'],...
+        'Interpreter', 'none');
+    xlim([0,t_max]);
+    ylim([F_avg_min{i}-0.1*F_avg_range{i}, F_avg_max{i}+0.1*F_avg_range{i}]);
+    xlabel 'Time (ms)', ylabel 'F (AU)';
+
+    subplot(5,4,13:15);
+    set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    plot(tt,dF_raw_dt{i}, 'r.-'), grid;
+    title([file_name2, '_ROI', num2str(i), ' - Derivative - Raw Signal'],'Interpreter', 'none');
+    xlim([0,t_max]);
+    ylim([dF_raw_dt_min{i}-0.1*dF_raw_dt_range{i}, dF_raw_dt_max{i}+0.1*dF_raw_dt_range{i}]);
+    xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
+
+    subplot(5,4,17:19);
+    set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    %plot(tt,dF_avg_dt{i}, 'r.-'), grid;
+    plot(tt,dF_avg_dt{i}, 'r.-', t(t_act_ind{i}(1:N_F_avg_peaks{i})), ...
+        dF_dt_max{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
+    title([file_name2, '_ROI', num2str(i), ' - Derivative - Baseline Correction + Smoothing'],...
+        'Interpreter', 'none');
+    xlim([0,t_max]);
     ylim([dF_avg_dt_min{i}-0.1*dF_avg_dt_range{i}, dF_avg_dt_max{i}+0.1*dF_avg_dt_range{i}]);
     xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
-    
-    
-   end 
-    
-   % Save figure
 
-    %saveas(signal_fig(i), [file_name2, '_ROI', num2str(i), '_AP'], 'fig'); 
+    % Zoomed in plots
+
+    subplot(5,4,4);
+    set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    plot(t,F_raw{i}, 'b.-'), grid;
+    title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
+    xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
+        t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
+    ylim([F_raw_min{i}-0.1*F_raw_range{i}, F_raw_max{i}+0.1*F_raw_range{i}]);
+    xlabel 'Time (ms)', ylabel 'F (AU)';
+
+    subplot(5,4,8);
+    set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    plot(t,f_y{i}, 'g.-'), grid;
+    title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
+    xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
+        t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
+    ylim([F_raw_min{i}-0.1*F_raw_range{i}, F_raw_max{i}+0.1*F_raw_range{i}]);
+    xlabel 'Time (ms)', ylabel 'F (AU)';
+
+    subplot(5,4,12);
+    set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    %plot(t,F_avg{i}, 'b.-'), grid;
+    plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'), grid;
+    title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
+    xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
+        t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
+    ylim([F_avg_min{i}-0.1*F_avg_range{i}, F_avg_max{i}+0.1*F_avg_range{i}]);
+    xlabel 'Time (ms)', ylabel 'F (AU)';
+
+    subplot(5,4,16);
+    set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    plot(tt,dF_raw_dt{i}, 'r.-'), grid;
+    title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
+    xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
+        t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
+    ylim([dF_raw_dt_min{i}-0.1*dF_raw_dt_range{i}, dF_raw_dt_max{i}+0.1*dF_raw_dt_range{i}]);
+    xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
+
+    subplot(5,4,20);
+    set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    plot(tt,dF_avg_dt{i}, 'r.-'), grid;
+    title(['Peak: ', num2str(round(N_F_avg_peaks{i}/2))],'Interpreter', 'none');
+    xlim([t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))-100,...
+        t(F_avg_peaks_ind{i}(round(N_F_avg_peaks{i}/2)))+150]);
+    ylim([dF_avg_dt_min{i}-0.1*dF_avg_dt_range{i}, dF_avg_dt_max{i}+0.1*dF_avg_dt_range{i}]);
+    xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
+
+    % Save figure
+
+    %saveas(signal_fig(i), [file_name2, '_ROI', num2str(i), '_signal'], 'fig'); 
 
     %print('-djpeg', '-r300', [file_name2,'_signal.jpg']); %simple jpg export
     r = 300; % pixels per inch
-    set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 900*N_F_avg_peaks{i} 2160]/r); % ->resolution: N_AP*450 x 1080
-    print(gcf, '-djpeg', [output_folder, file_name2, '_ROI', num2str(i), '_AP.jpg']); %jpg export
+    set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 3000 6000]/r); % ->resolution: 1500x3000
+    print(gcf, '-djpeg', [output_folder, file_name2, '_ROI', num2str(i), '_signal.jpg']); %jpg export
 
-   
+    end
+
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Electrophysiological variables
+
+    % Signal action potential plots
+
+    %Vertical plots
+    % for i=1:n_rois
+    %    AP_fig(i) = figure(n_rois+i);
+    %    
+    %    for f=1:N_F_avg_peaks{1}
+    %     
+    %     subplot(N_F_avg_peaks{i},1,f);
+    %     %set(gcf,'Visible','off'); %prevent figures to pop up on screen
+    %     plot(t,F_avg{i}, 'b.-'), grid;
+    %     %plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'),
+    %     %grid; plot the circle on top of the peak
+    %     
+    %         for f_bc=1:N_F_avg_peaks{i}
+    %             line([t(baseline_start_ind{i}{f_bc}), t(baseline_end_ind{i}{f_bc})],...
+    %             [baseline_mean{i}{f_bc}, baseline_mean{i}{f_bc}],...
+    %             'LineWidth', 2, 'Color', [0 0.6 0]) %baseline detection plot
+    %         end
+    %     
+    %     title([file_name2, '_ROI', num2str(i), ' - AP number: ', ...
+    %         num2str(f)],'Interpreter', 'none');
+    %     xlim([t(F_avg_peaks_ind{i}(f))-50,...
+    %         t(F_avg_peaks_ind{i}(f))+100]);
+    %     ylim([F_avg_min{i}-0.1*F_avg_range{i}, F_avg_max{i}+0.1*F_avg_range{i}]);
+    %     xlabel 'Time (ms)', ylabel 'F (AU)';
+    %     
+    %     end 
+    %     
+    % end
+
+
+    %Horizontal plots
+
+    for i=1:n_rois
+       AP_fig(i) = figure(n_rois+i);
+
+       for f=1:N_F_avg_peaks{i}
+
+        % Main AP plots
+
+        subplot(2,N_F_avg_peaks{i},f);
+        set(gcf,'Visible','off'); %prevent figures to pop up on screen
+        plot(t,F_avg{i}, 'b.-'), grid;
+        %plot(t,F_avg{i}, 'b.-', t(F_avg_peaks_ind{i}), F_avg_peaks{i}, 'oc'),
+        %grid; plot the circle on top of the peak
+
+        %Plot different lines to the plot
+
+            for f_lines=1:N_F_avg_peaks{i}
+
+                line([t(baseline_start_ind{i}{f_lines}), t(baseline_end_ind{i}{f_lines})],...
+                [baseline_mean{i}{f_lines}, baseline_mean{i}{f_lines}],...
+                'LineWidth', 2, 'Color', [0 0.6 0]); %baseline detection plot
+
+                line([t_act{i}(f_lines), t_act{i}(f_lines)],...
+                [baseline_mean{i}{f_lines}, F_max{i}(f_lines)],...
+                'LineWidth', 0.75, 'Color', [0 0 0],...
+                'LineStyle', '--'); %Activation time vertical line
+
+                line([t_act{i}(f_lines), t(F_avg_peaks_ind{i}(f_lines))],...
+                [F_max{i}(f_lines), F_max{i}(f_lines)],...
+                'LineWidth', 2, 'Color', [1 0 0]); %Rise time line
+
+                line([t_act{i}(f_lines), t(APD30_ind{i}(f_lines))],...
+                [F_AP_30{i}(f_lines), F_AP_30{i}(f_lines)],...
+                'LineWidth', 2, 'Color', [1 0 0]); %APD30 line
+
+                line([t_act{i}(f_lines), t(APD50_ind{i}(f_lines))],...
+                [F_AP_50{i}(f_lines), F_AP_50{i}(f_lines)],...
+                'LineWidth', 2, 'Color', [1 0 0]); %APD50 line
+
+                line([t_act{i}(f_lines), t(APD80_ind{i}(f_lines))],...
+                [F_AP_80{i}(f_lines), F_AP_80{i}(f_lines)],...
+                'LineWidth', 2, 'Color', [1 0 0]); %APD80 line
+
+            end
+
+        title([file_name2, '_ROI', num2str(i), ' - AP', ...
+            num2str(f)],'Interpreter', 'none');
+        xlim([t(F_avg_peaks_ind{i}(f))-100,...
+            t(F_avg_peaks_ind{i}(f))+150]);
+        ylim([F_avg_min{i}-0.1*F_avg_range{i}, F_avg_max{i}+0.1*F_avg_range{i}]);
+        xlabel 'Time (ms)', ylabel 'F (AU)';
+
+
+
+        % First derivative plot
+
+        subplot(2,N_F_avg_peaks{i},N_F_avg_peaks{i}+f);
+        set(gcf,'Visible','off'); %prevent figures to pop up on screen
+        plot(tt,dF_avg_dt{i}, 'r.-', t(t_act_ind{i}(1:N_F_avg_peaks{i})), ...
+        dF_dt_max{i}(1:N_F_avg_peaks{i}), 'oc'), grid;
+
+        for f_lines=1:N_F_avg_peaks{i}
+            line([t_act{i}(f_lines), t_act{i}(f_lines)],...
+                [dF_avg_dt_min{i}-0.1*dF_avg_dt_range{i}, ...
+                dF_avg_dt_max{i}+0.1*dF_avg_dt_range{i}],...
+                'LineWidth', 0.75, 'Color', [0 0 0],...
+                'LineStyle', '--'); %Activation time vertical line
+        end
+
+        title([file_name2, '_ROI', num2str(i), ' - AP', ...
+            num2str(f)],'Interpreter', 'none');
+        xlim([t(F_avg_peaks_ind{i}(f))-100,...
+            t(F_avg_peaks_ind{i}(f))+150]);
+        ylim([dF_avg_dt_min{i}-0.1*dF_avg_dt_range{i}, dF_avg_dt_max{i}+0.1*dF_avg_dt_range{i}]);
+        xlabel 'Time (ms)', ylabel 'dF/dt (AU/ms)';
+
+
+       end 
+
+       % Save figure
+
+        %saveas(signal_fig(i), [file_name2, '_ROI', num2str(i), '_AP'], 'fig'); 
+
+        %print('-djpeg', '-r300', [file_name2,'_signal.jpg']); %simple jpg export
+        r = 300; % pixels per inch
+        set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 900*N_F_avg_peaks{i} 2160]/r); % ->resolution: N_AP*450 x 1080
+        print(gcf, '-djpeg', [output_folder, file_name2, '_ROI', num2str(i), '_AP.jpg']); %jpg export
+
+
+    end
+
+else
+    disp('Plotting figures: OFF');
+    
 end
-
-
 
 end
 
