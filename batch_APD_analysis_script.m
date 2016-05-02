@@ -21,6 +21,9 @@ OUTPUT_FOLDER = '/Users/klemen/Repositories/optical_mapping/Output/';
 SAVE_FIGURES = 'jpg';
 %SAVE_FIGURES = '0'; %switch off figure saving
 
+AP_FIGURES = 'true';
+%AP_FIGURES = '0'; %switch off single AP figure plotting
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Create a list of files
@@ -49,7 +52,7 @@ for i=1:N_ROI_files
         
     % Run the function that analyses the ROI file
     APD_analysis_function(ROI_FILE_FOLDER, ROI_files(i).name, ...
-        OUTPUT_FOLDER, SAVE_FIGURES);
+        OUTPUT_FOLDER, SAVE_FIGURES, AP_FIGURES);
     close all;
     
 end
