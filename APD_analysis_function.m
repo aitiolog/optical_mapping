@@ -417,7 +417,7 @@ if n_rois == 4;
 
     % Save summary variables in csv file
 
-    outputSummaryFilename = [file_name2, '-summary.csv'];
+    outputSummaryFilename = [output_folder, file_name2, '-summary.csv'];
 
     fileID = fopen(outputSummaryFilename,'w');
     % Header line
@@ -597,7 +597,7 @@ elseif n_rois == 6;
     
     % Save summary variables in csv file
 
-    outputSummaryFilename = [file_name2, '-summary.csv'];
+    outputSummaryFilename = [output_folder, file_name2, '-summary.csv'];
 
     fileID = fopen(outputSummaryFilename,'w');
     % Header line
