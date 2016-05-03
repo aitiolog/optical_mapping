@@ -332,6 +332,293 @@ for i=1:N_rows
 end
 fclose(fileID);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SUMMARY OF RESULTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if n_rois == 4;
+    % OPTION A: Zoomed in left or right atria (ROI=4)
+    disp('Zoomed atria summary results');
+    
+    % Convert the cell arrays to matrices for easier manipulation
+    % Check if the number of APs is the same in all ROIs (-1 if not)
+
+    APD30_size = cellfun(@length, APD30);
+    if all(APD30_size == APD30_size(1));
+        APD30_mat = vertcat(APD30{:});
+    else
+        disp('Number of APs in APD30 ROIs do not match - no summary analysis');
+        APD30_mat = -1;
+    end
+
+    APD50_size = cellfun(@length, APD50);
+    if all(APD50_size == APD50_size(1));
+        APD50_mat = vertcat(APD50{:});
+    else
+        disp('Number of APs in APD50 ROIs do not match - no summary analysis');
+        APD50_mat = -1;
+    end
+
+    APD80_size = cellfun(@length, APD80);
+    if all(APD80_size == APD80_size(1));
+        APD80_mat = vertcat(APD80{:});
+    else
+        disp('Number of APs in APD80 ROIs do not match - no summary analysis');
+        APD80_mat = -1;
+    end
+
+    F_peak_interval_size = cellfun(@length, F_peak_interval);
+    if all(F_peak_interval_size == F_peak_interval_size(1));
+        F_peak_interval_mat = vertcat(F_peak_interval{:});
+    else
+        disp('Number of APs in F_peak_interval ROIs do not match - no summary analysis');
+        F_peak_interval_mat = -1;
+    end
+
+    AP_amplitude_size = cellfun(@length, AP_amplitude);
+    if all(AP_amplitude_size == AP_amplitude_size(1));
+        AP_amplitude_mat = vertcat(AP_amplitude{:});
+    else
+        disp('Number of APs in AP_amplitude ROIs do not match - no summary analysis');
+        AP_amplitude_mat = -1;
+    end
+
+    % Calculations of summary variables
+
+    APD30_avg = mean2(APD30_mat);
+    APD30_STD = std2(APD30_mat);
+    Loc_APD30_STD = std(mean(APD30_mat,2)); %STD of rows' means
+
+    APD50_avg = mean2(APD50_mat);
+    APD50_STD = std2(APD50_mat);
+    Loc_APD50_STD = std(mean(APD50_mat,2)); %STD of rows' means
+
+    APD80_avg = mean2(APD80_mat);
+    APD80_STD = std2(APD80_mat);
+    Loc_APD80_STD = std(mean(APD80_mat,2)); %STD of rows' means
+
+    AP_interval_avg = mean(mean(F_peak_interval_mat));
+    AP_interval_STD_avg = std2(mean(F_peak_interval_mat,1));
+
+    AP_amp_CoefVar = mean(std(AP_amplitude_mat, 0, 2)./...
+        mean(AP_amplitude_mat,2)); %mean AP amplitude CV of every row
+
+    % Create summary variables csv string
+
+    outputSummaryRow = [{file_name2, 'zoomed atria', ...
+        AP_interval_avg, AP_interval_STD_avg, ...
+        APD30_avg, APD50_avg, APD80_avg,...
+        APD30_STD, APD50_STD, APD80_STD,...
+        Loc_APD30_STD, Loc_APD50_STD, Loc_APD80_STD,...
+        AP_amp_CoefVar}];
+    outputSummaryRowString = cellfun(@num2str, outputSummaryRow,...
+        'UniformOutput', false);
+    outputSummaryRowSingleString = strjoin(outputSummaryRowString, ',');
+
+    % Save summary variables in csv file
+
+    outputSummaryFilename = [file_name2, '-summary.csv'];
+
+    fileID = fopen(outputSummaryFilename,'w');
+    % Header line
+    fprintf(fileID,'%s,\n',...
+        'file_name,Region,AP_interval_avg,AP_interval_STD_avg,APD30_avg,APD50_avg,APD80_avg,APD30_STD,APD50_STD,APD80_STD,Loc_APD30_STD,Loc_APD50_STD,Loc_APD80_STD,AP_amp_CoefVar');
+    % Results line
+    fprintf(fileID, '%s\n', outputSummaryRowSingleString);
+    fclose(fileID);
+    
+    
+    
+    
+elseif n_rois == 6;
+    % OPTION B: Biatrial analysis (ROI=6)
+    % LA - ROI1-2
+    % RA - ROI3-4
+    % SAN1 - ROI5
+    % SAN2 - ROI6
+    disp('Biatrial summary results');
+    
+    % Obtain cell arrays for a particalar ROI region(s)
+    
+    % LA = ROI1 + ROI2
+    LA_APD30 = {APD30{1:2}};
+    LA_APD50 = {APD50{1:2}};
+    LA_APD80 = {APD80{1:2}};
+    LA_F_peak_interval = {F_peak_interval{1:2}};
+    LA_AP_amplitude = {AP_amplitude{1:2}};
+    
+    % RA = ROI3 + ROI4
+    RA_APD30 = {APD30{3:4}};
+    RA_APD50 = {APD50{3:4}};
+    RA_APD80 = {APD80{3:4}};
+    RA_F_peak_interval = {F_peak_interval{3:4}};
+    RA_AP_amplitude = {AP_amplitude{3:4}};
+    
+    % SAN1 = ROI5
+    SAN1_APD30 = {APD30{5}};
+    SAN1_APD50 = {APD50{5}};
+    SAN1_APD80 = {APD80{5}};
+    SAN1_F_peak_interval = {F_peak_interval{5}};
+    SAN1_AP_amplitude = {AP_amplitude{5}};
+    
+    % SAN2 = ROI6
+    SAN2_APD30 = {APD30{6}};
+    SAN2_APD50 = {APD50{6}};
+    SAN2_APD80 = {APD80{6}};
+    SAN2_F_peak_interval = {F_peak_interval{6}};
+    SAN2_AP_amplitude = {AP_amplitude{6}};
+    
+    % Convert the cell arrays to matrices for easier manipulation
+    % Need 'APD_ROI_mat_conv.m' function
+    
+    LA_APD30_mat = APD_ROI_mat_conv(LA_APD30);
+    LA_APD50_mat = APD_ROI_mat_conv(LA_APD50);
+    LA_APD80_mat = APD_ROI_mat_conv(LA_APD80);
+    LA_F_peak_interval_mat = APD_ROI_mat_conv(LA_F_peak_interval);
+    LA_AP_amplitude_mat = APD_ROI_mat_conv(LA_AP_amplitude);
+    
+    RA_APD30_mat = APD_ROI_mat_conv(RA_APD30);
+    RA_APD50_mat = APD_ROI_mat_conv(RA_APD50);
+    RA_APD80_mat = APD_ROI_mat_conv(RA_APD80);
+    RA_F_peak_interval_mat = APD_ROI_mat_conv(RA_F_peak_interval);
+    RA_AP_amplitude_mat = APD_ROI_mat_conv(RA_AP_amplitude);
+    
+    SAN1_APD30_mat = APD_ROI_mat_conv(SAN1_APD30);
+    SAN1_APD50_mat = APD_ROI_mat_conv(SAN1_APD50);
+    SAN1_APD80_mat = APD_ROI_mat_conv(SAN1_APD80);
+    SAN1_F_peak_interval_mat = APD_ROI_mat_conv(SAN1_F_peak_interval);
+    SAN1_AP_amplitude_mat = APD_ROI_mat_conv(SAN1_AP_amplitude);
+    
+    SAN2_APD30_mat = APD_ROI_mat_conv(SAN2_APD30);
+    SAN2_APD50_mat = APD_ROI_mat_conv(SAN2_APD50);
+    SAN2_APD80_mat = APD_ROI_mat_conv(SAN2_APD80);
+    SAN2_F_peak_interval_mat = APD_ROI_mat_conv(SAN2_F_peak_interval);
+    SAN2_AP_amplitude_mat = APD_ROI_mat_conv(SAN2_AP_amplitude);
+    
+    % Calculations of summary variables
+
+    LA_APD30_avg = mean2(LA_APD30_mat);
+    LA_APD30_STD = std2(LA_APD30_mat);
+    Loc_LA_APD30_STD = std(mean(LA_APD30_mat,2)); %STD of rows' means
+    LA_APD50_avg = mean2(LA_APD50_mat);
+    LA_APD50_STD = std2(LA_APD50_mat);
+    Loc_LA_APD50_STD = std(mean(LA_APD50_mat,2)); %STD of rows' means
+    LA_APD80_avg = mean2(LA_APD80_mat);
+    LA_APD80_STD = std2(LA_APD80_mat);
+    Loc_LA_APD80_STD = std(mean(LA_APD80_mat,2)); %STD of rows' means
+    LA_AP_interval_avg = mean(mean(LA_F_peak_interval_mat));
+    LA_AP_interval_STD_avg = std2(mean(LA_F_peak_interval_mat,1));
+    LA_AP_amp_CoefVar = mean(std(LA_AP_amplitude_mat, 0, 2)./...
+        mean(LA_AP_amplitude_mat,2)); %mean AP amplitude CV of every row
+
+    RA_APD30_avg = mean2(RA_APD30_mat);
+    RA_APD30_STD = std2(RA_APD30_mat);
+    Loc_RA_APD30_STD = std(mean(RA_APD30_mat,2)); %STD of rows' means
+    RA_APD50_avg = mean2(RA_APD50_mat);
+    RA_APD50_STD = std2(RA_APD50_mat);
+    Loc_RA_APD50_STD = std(mean(RA_APD50_mat,2)); %STD of rows' means
+    RA_APD80_avg = mean2(RA_APD80_mat);
+    RA_APD80_STD = std2(RA_APD80_mat);
+    Loc_RA_APD80_STD = std(mean(RA_APD80_mat,2)); %STD of rows' means
+    RA_AP_interval_avg = mean(mean(RA_F_peak_interval_mat));
+    RA_AP_interval_STD_avg = std2(mean(RA_F_peak_interval_mat,1));
+    RA_AP_amp_CoefVar = mean(std(RA_AP_amplitude_mat, 0, 2)./...
+        mean(RA_AP_amplitude_mat,2)); %mean AP amplitude CV of every row
+    
+    SAN1_APD30_avg = mean2(SAN1_APD30_mat);
+    SAN1_APD30_STD = std2(SAN1_APD30_mat);
+    Loc_SAN1_APD30_STD = std(mean(SAN1_APD30_mat,2)); %STD of rows' means
+    SAN1_APD50_avg = mean2(SAN1_APD50_mat);
+    SAN1_APD50_STD = std2(SAN1_APD50_mat);
+    Loc_SAN1_APD50_STD = std(mean(SAN1_APD50_mat,2)); %STD of rows' means
+    SAN1_APD80_avg = mean2(SAN1_APD80_mat);
+    SAN1_APD80_STD = std2(SAN1_APD80_mat);
+    Loc_SAN1_APD80_STD = std(mean(SAN1_APD80_mat,2)); %STD of rows' means
+    SAN1_AP_interval_avg = mean(mean(SAN1_F_peak_interval_mat));
+    SAN1_AP_interval_STD_avg = std2(mean(SAN1_F_peak_interval_mat,1));
+    SAN1_AP_amp_CoefVar = mean(std(SAN1_AP_amplitude_mat, 0, 2)./...
+        mean(SAN1_AP_amplitude_mat,2)); %mean AP amplitude CV of every row
+    
+    SAN2_APD30_avg = mean2(SAN2_APD30_mat);
+    SAN2_APD30_STD = std2(SAN2_APD30_mat);
+    Loc_SAN2_APD30_STD = std(mean(SAN2_APD30_mat,2)); %STD of rows' means
+    SAN2_APD50_avg = mean2(SAN2_APD50_mat);
+    SAN2_APD50_STD = std2(SAN2_APD50_mat);
+    Loc_SAN2_APD50_STD = std(mean(SAN2_APD50_mat,2)); %STD of rows' means
+    SAN2_APD80_avg = mean2(SAN2_APD80_mat);
+    SAN2_APD80_STD = std2(SAN2_APD80_mat);
+    Loc_SAN2_APD80_STD = std(mean(SAN2_APD80_mat,2)); %STD of rows' means
+    SAN2_AP_interval_avg = mean(mean(SAN2_F_peak_interval_mat));
+    SAN2_AP_interval_STD_avg = std2(mean(SAN2_F_peak_interval_mat,1));
+    SAN2_AP_amp_CoefVar = mean(std(SAN2_AP_amplitude_mat, 0, 2)./...
+        mean(SAN2_AP_amplitude_mat,2)); %mean AP amplitude CV of every row
+    
+    % Create summary variables csv string
+
+    LA_outputSummaryRow = [{file_name2, 'LA_biatrial', ...
+        LA_AP_interval_avg, LA_AP_interval_STD_avg, ...
+        LA_APD30_avg, LA_APD50_avg, LA_APD80_avg,...
+        LA_APD30_STD, LA_APD50_STD, LA_APD80_STD,...
+        Loc_LA_APD30_STD, Loc_LA_APD50_STD, Loc_LA_APD80_STD,...
+        LA_AP_amp_CoefVar}];
+    LA_outputSummaryRowString = cellfun(@num2str, LA_outputSummaryRow,...
+        'UniformOutput', false);
+    LA_outputSummaryRowSingleString = strjoin(LA_outputSummaryRowString, ',');
+    
+    RA_outputSummaryRow = [{file_name2, 'RA_biatrial', ...
+        RA_AP_interval_avg, RA_AP_interval_STD_avg, ...
+        RA_APD30_avg, RA_APD50_avg, RA_APD80_avg,...
+        RA_APD30_STD, RA_APD50_STD, RA_APD80_STD,...
+        Loc_RA_APD30_STD, Loc_RA_APD50_STD, Loc_RA_APD80_STD,...
+        RA_AP_amp_CoefVar}];
+    RA_outputSummaryRowString = cellfun(@num2str, RA_outputSummaryRow,...
+        'UniformOutput', false);
+    RA_outputSummaryRowSingleString = strjoin(RA_outputSummaryRowString, ',');
+    
+    SAN1_outputSummaryRow = [{file_name2, 'SAN1_biatrial', ...
+        SAN1_AP_interval_avg, SAN1_AP_interval_STD_avg, ...
+        SAN1_APD30_avg, SAN1_APD50_avg, SAN1_APD80_avg,...
+        SAN1_APD30_STD, SAN1_APD50_STD, SAN1_APD80_STD,...
+        Loc_SAN1_APD30_STD, Loc_SAN1_APD50_STD, Loc_SAN1_APD80_STD,...
+        SAN1_AP_amp_CoefVar}];
+    SAN1_outputSummaryRowString = cellfun(@num2str, SAN1_outputSummaryRow,...
+        'UniformOutput', false);
+    SAN1_outputSummaryRowSingleString = strjoin(SAN1_outputSummaryRowString, ',');
+    
+    SAN2_outputSummaryRow = [{file_name2, 'SAN2_biatrial', ...
+        SAN2_AP_interval_avg, SAN2_AP_interval_STD_avg, ...
+        SAN2_APD30_avg, SAN2_APD50_avg, SAN2_APD80_avg,...
+        SAN2_APD30_STD, SAN2_APD50_STD, SAN2_APD80_STD,...
+        Loc_SAN2_APD30_STD, Loc_SAN2_APD50_STD, Loc_SAN2_APD80_STD,...
+        SAN2_AP_amp_CoefVar}];
+    SAN2_outputSummaryRowString = cellfun(@num2str, SAN2_outputSummaryRow,...
+        'UniformOutput', false);
+    SAN2_outputSummaryRowSingleString = strjoin(SAN2_outputSummaryRowString, ',');
+    
+    % Save summary variables in csv file
+
+    outputSummaryFilename = [file_name2, '-summary.csv'];
+
+    fileID = fopen(outputSummaryFilename,'w');
+    % Header line
+    fprintf(fileID,'%s,\n',...
+        'file_name,Region,AP_interval_avg,AP_interval_STD_avg,APD30_avg,APD50_avg,APD80_avg,APD30_STD,APD50_STD,APD80_STD,Loc_APD30_STD,Loc_APD50_STD,Loc_APD80_STD,AP_amp_CoefVar');
+    % Results line
+    fprintf(fileID, '%s\n', LA_outputSummaryRowSingleString);
+    fprintf(fileID, '%s\n', RA_outputSummaryRowSingleString);
+    fprintf(fileID, '%s\n', SAN1_outputSummaryRowSingleString);
+    fprintf(fileID, '%s\n', SAN2_outputSummaryRowSingleString);
+    fclose(fileID);
+    
+    
+    
+    
+else
+    disp('N_ROI not recognized - no summary results generated');
+end
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
